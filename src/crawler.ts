@@ -6,22 +6,24 @@ import { CrawlResult } from "./types";
 /**
  * Crawls the Naver blog and extracts menu images
  */
-export async function crawlMenuImages(blogUrl: string): Promise<CrawlResult> {
+export async function crawlMenuImages(blogUrl: string, headless: boolean = true): Promise<CrawlResult> {
   let browser: Browser | null = null;
 
   try {
     // Launch browser
     browser = await puppeteer.launch({
-      headless: true,
+      headless,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
     const page = await browser.newPage();
 
     // Set user agent to desktop browser to ensure we get the desktop version
-    await page.setUserAgent(
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    );
+    await page.setUserAgent({
+      userAgent:
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+      platform: "MacIntel",
+    });
 
     // Navigate to blog
     console.log(`Navigating to ${blogUrl}...`);

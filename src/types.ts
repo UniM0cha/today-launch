@@ -19,16 +19,15 @@ export interface BotConfig {
   headless: boolean;
 }
 
+import { EmbedBuilder } from "discord.js";
+
 /**
  * Discord message payload
+ * Compatible with Discord.js WebhookMessageCreateOptions
  */
 export interface DiscordMessage {
-  content: string;
-  embeds?: Array<{
-    color: number;
-    description?: string;
-    image?: { url: string };
-  }>;
+  content?: string;
+  embeds?: EmbedBuilder[];
   files?: Array<{
     attachment: Buffer;
     name: string;

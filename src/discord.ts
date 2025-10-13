@@ -1,5 +1,5 @@
 import { WebhookClient, EmbedBuilder } from "discord.js";
-import { CrawlResult } from "./types";
+import { CrawlResult, DiscordMessage } from "./types";
 
 /**
  * Sends menu images to Discord
@@ -27,9 +27,9 @@ export async function sendMenuToDiscord(webhookUrl: string, result: CrawlResult)
 }
 
 /**
- * Sends success message with menu images
+ * Builds success message with menu images
  */
-async function sendSuccessMessage(webhook: WebhookClient, result: CrawlResult): Promise<void> {
+function buildSuccessMessage(result: CrawlResult): DiscordMessage {
   const embed = new EmbedBuilder()
     .setColor(0x00ff00) // Green
     .setTitle(`🍴 오늘의 세교푸드 메뉴 (${result.date} ${result.dayOfWeek})`)
@@ -37,21 +37,30 @@ async function sendSuccessMessage(webhook: WebhookClient, result: CrawlResult): 
     .setTimestamp()
     .setFooter({ text: "세교푸드 메뉴 봇" });
 
-  // Send lunch image
+  // Lunch image embed
   const lunchEmbed = new EmbedBuilder().setColor(0x0099ff).setTitle("🍱 중식").setImage(result.lunchImageUrl!);
 
-  // Send dinner image
+  // Dinner image embed
   const dinnerEmbed = new EmbedBuilder().setColor(0xff9900).setTitle("🍽️ 석식").setImage(result.dinnerImageUrl!);
 
-  await webhook.send({
+  return {
+    content: "",
     embeds: [embed, lunchEmbed, dinnerEmbed],
-  });
+  };
 }
 
 /**
- * Sends error notification
+ * Sends success message with menu images
  */
-async function sendErrorMessage(webhook: WebhookClient, result: CrawlResult): Promise<void> {
+async function sendSuccessMessage(webhook: WebhookClient, result: CrawlResult): Promise<void> {
+  const message = buildSuccessMessage(result);
+  await webhook.send(message);
+}
+
+/**
+ * Builds error notification message
+ */
+function buildErrorMessage(result: CrawlResult): DiscordMessage {
   const embed = new EmbedBuilder()
     .setColor(0xffaa00) // Yellow/Orange
     .setTitle("⚠️ 메뉴를 찾을 수 없습니다")
@@ -63,7 +72,16 @@ async function sendErrorMessage(webhook: WebhookClient, result: CrawlResult): Pr
     .setTimestamp()
     .setFooter({ text: "세교푸드 메뉴 봇" });
 
-  await webhook.send({
+  return {
+    content: "",
     embeds: [embed],
-  });
+  };
+}
+
+/**
+ * Sends error notification
+ */
+async function sendErrorMessage(webhook: WebhookClient, result: CrawlResult): Promise<void> {
+  const message = buildErrorMessage(result);
+  await webhook.send(message);
 }
