@@ -8,7 +8,7 @@ export async function sendMenuToDiscord(webhookUrl: string, result: CrawlResult)
   const webhook = new WebhookClient({ url: webhookUrl });
 
   try {
-    if (result.success && result.lunchImageUrl && result.dinnerImageUrl) {
+    if (result.success && result.menuImageUrl) {
       // Success: Send menu images
       await sendSuccessMessage(webhook, result);
     } else {
@@ -30,22 +30,22 @@ export async function sendMenuToDiscord(webhookUrl: string, result: CrawlResult)
  * Builds success message with menu images
  */
 function buildSuccessMessage(result: CrawlResult): DiscordMessage {
-  const embed = new EmbedBuilder()
+  const headerEmbed = new EmbedBuilder()
     .setColor(0x00ff00) // Green
     .setTitle(`🍴 오늘의 세교푸드 메뉴 (${result.date} ${result.dayOfWeek})`)
-    .setDescription("오늘의 중식과 석식 메뉴입니다.")
+    .setDescription("오늘의 중식 & 석식 메뉴입니다.")
     .setTimestamp()
     .setFooter({ text: "세교푸드 메뉴 봇" });
 
-  // Lunch image embed
-  const lunchEmbed = new EmbedBuilder().setColor(0x0099ff).setTitle("🍱 중식").setImage(result.lunchImageUrl!);
-
-  // Dinner image embed
-  const dinnerEmbed = new EmbedBuilder().setColor(0xff9900).setTitle("🍽️ 석식").setImage(result.dinnerImageUrl!);
+  // Menu image embed
+  const menuEmbed = new EmbedBuilder()
+    .setColor(0x0099ff)
+    .setTitle("🍱 중식 & 🍽️ 석식")
+    .setImage(result.menuImageUrl!);
 
   return {
     content: "",
-    embeds: [embed, lunchEmbed, dinnerEmbed],
+    embeds: [headerEmbed, menuEmbed],
   };
 }
 

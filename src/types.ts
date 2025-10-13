@@ -5,8 +5,7 @@ export interface CrawlResult {
   success: boolean;
   date: string; // "10월 14일"
   dayOfWeek: string; // "월요일"
-  lunchImageUrl?: string;
-  dinnerImageUrl?: string;
+  menuImageUrl?: string;
   error?: string;
 }
 

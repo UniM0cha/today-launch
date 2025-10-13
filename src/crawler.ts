@@ -71,12 +71,12 @@ export async function crawlMenuImages(blogUrl: string, headless: boolean = true)
       };
     }
 
-    if (images.length < 2) {
+    if (images.length < 1) {
       return {
         success: false,
         date: `${month}월 ${day}일`,
         dayOfWeek,
-        error: `Expected 2 images (lunch & dinner), found ${images.length}`,
+        error: `Expected at least 1 menu image, found ${images.length}`,
       };
     }
 
@@ -84,8 +84,7 @@ export async function crawlMenuImages(blogUrl: string, headless: boolean = true)
       success: true,
       date: `${month}월 ${day}일`,
       dayOfWeek,
-      lunchImageUrl: images[0],
-      dinnerImageUrl: images[1],
+      menuImageUrl: images[0],
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
