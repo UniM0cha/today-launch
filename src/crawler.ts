@@ -54,7 +54,7 @@ export async function crawlMenuImages(blogUrl: string, headless: boolean = true)
     const today = new Date();
     const month = format(today, "M", { locale: ko }); // "10"
     const day = format(today, "d", { locale: ko }); // "14"
-    const dayOfWeek = format(today, "EEEE", { locale: ko }); // "월요일"
+    const dayOfWeek = format(today, "EEEE", { locale: ko }); // "화요일"
     const expectedTitle = `${month}월 ${day}일 ${dayOfWeek} 메뉴`;
 
     console.log(`Looking for post with title: ${expectedTitle}`);
@@ -141,14 +141,17 @@ async function findTodaysPostAndExtractImages(
 
             let imageUrl: string | null = null;
 
-            // First try: Extract from data-linkdata JSON
+            // Try to get original image URL from data-linkdata and add size parameter
             if (linkElement) {
               imageUrl = await frame.evaluate((link: Element | null) => {
                 const linkData = (link as HTMLAnchorElement)?.getAttribute("data-linkdata");
                 if (linkData) {
                   try {
                     const data = JSON.parse(linkData);
-                    return data.src || null;
+                    if (data.src) {
+                      // Add w773 parameter for larger image size
+                      return data.src + "?type=w773";
+                    }
                   } catch {
                     return null;
                   }
@@ -157,12 +160,10 @@ async function findTodaysPostAndExtractImages(
               }, linkElement);
             }
 
-            // Fallback: Use img src attribute (remove quality parameters)
+            // Fallback: Use img src attribute directly
             if (!imageUrl) {
               imageUrl = await frame.evaluate((img: Element) => {
-                const src = (img as HTMLImageElement).src;
-                // Remove quality parameters like ?type=w773
-                return src.split("?")[0];
+                return (img as HTMLImageElement).src;
               }, imgElement);
             }
 

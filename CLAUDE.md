@@ -63,8 +63,8 @@ The application follows a simple three-layer architecture:
      - Post titles: `.se-title-text .se-text-paragraph`
      - Images: `.se-image-resource`
    - Image extraction strategy:
-     1. First tries to get high-quality URL from `data-linkdata` JSON attribute
-     2. Falls back to `img.src` with quality parameters removed
+     1. First tries to get original URL from `data-linkdata` JSON attribute and adds `?type=w773` parameter for optimal Discord display size
+     2. Falls back to `img.src` directly (which may include lazy-loading parameters)
 
 3. **Discord Layer** (`src/discord.ts`)
    - Sends rich embeds via Discord webhook using `discord.js` WebhookClient
@@ -140,8 +140,9 @@ The crawler expects at least 1 image from each post:
 - Extracts the first image found in the matching post
 - If fewer than 1 image is found, the bot reports an error
 - Image quality optimization:
-  - Attempts to extract original high-quality URL from `data-linkdata` attribute
-  - Removes URL quality parameters (e.g., `?type=w773`) to get full resolution
+  - Extracts original URL from `data-linkdata` attribute to avoid lazy-loading blur
+  - Adds `?type=w773` parameter to get optimal image size for Discord embeds (large enough to be readable, small enough to load quickly)
+  - Note: Without the size parameter, Naver's CDN may serve a very small thumbnail; with it, Discord displays the image at a good readable size
 
 ## GitHub Actions Deployment
 

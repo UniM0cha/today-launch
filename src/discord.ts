@@ -37,7 +37,7 @@ function buildSuccessMessage(result: CrawlResult): DiscordMessage {
     .setTimestamp()
     .setFooter({ text: "세교푸드 메뉴 봇" });
 
-  // Menu image embed
+  // Menu image embed (with query parameters for proper size)
   const menuEmbed = new EmbedBuilder()
     .setColor(0x0099ff)
     .setTitle("🍱 중식 & 🍽️ 석식")
