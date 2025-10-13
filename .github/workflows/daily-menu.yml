@@ -12,6 +12,8 @@ on:
 jobs:
   send-menu:
     runs-on: ubuntu-latest
+    env:
+      TZ: Asia/Seoul
 
     steps:
       - name: Checkout code
