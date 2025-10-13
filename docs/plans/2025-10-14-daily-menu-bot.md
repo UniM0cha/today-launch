@@ -7,6 +7,7 @@
 **Architecture:** GitHub Actions scheduled workflow triggers a Node.js/TypeScript script that uses Puppeteer to crawl the Naver blog, extracts menu images, and sends them to Discord via Webhook. Error notifications are also sent to Discord.
 
 **Tech Stack:**
+
 - TypeScript
 - Puppeteer (v24.x) - Web scraping
 - discord.js (v14.22.1) - Discord Webhook client
@@ -18,6 +19,7 @@
 ## Task 1: Project Initialization
 
 **Files:**
+
 - Create: `package.json`
 - Create: `tsconfig.json`
 - Create: `.env.example`
@@ -109,6 +111,7 @@ git commit -m "chore: initialize project with TypeScript and dependencies"
 ## Task 2: Type Definitions
 
 **Files:**
+
 - Create: `src/types.ts`
 
 ### Step 1: Create types file
@@ -166,6 +169,7 @@ git commit -m "feat: add TypeScript type definitions"
 ## Task 3: Crawler Module
 
 **Files:**
+
 - Create: `src/crawler.ts`
 
 ### Step 1: Create crawler skeleton
@@ -173,10 +177,10 @@ git commit -m "feat: add TypeScript type definitions"
 Create `src/crawler.ts`:
 
 ```typescript
-import puppeteer, { Browser, Page } from 'puppeteer';
-import { format } from 'date-fns';
-import { ko } from 'date-fns/locale';
-import { CrawlResult } from './types';
+import puppeteer, { Browser, Page } from "puppeteer";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
+import { CrawlResult } from "./types";
 
 /**
  * Crawls the Naver blog and extracts menu images
@@ -188,23 +192,23 @@ export async function crawlMenuImages(blogUrl: string): Promise<CrawlResult> {
     // Launch browser
     browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
     const page = await browser.newPage();
 
     // Navigate to blog
     console.log(`Navigating to ${blogUrl}...`);
-    await page.goto(blogUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+    await page.goto(blogUrl, { waitUntil: "networkidle2", timeout: 30000 });
 
     // Wait for blog posts to load
-    await page.waitForSelector('.se-section-documentList', { timeout: 10000 });
+    await page.waitForSelector(".se-section-documentList", { timeout: 10000 });
 
     // Get today's date in Korean format
     const today = new Date();
-    const month = format(today, 'M', { locale: ko }); // "10"
-    const day = format(today, 'd', { locale: ko }); // "14"
-    const dayOfWeek = format(today, 'EEEE', { locale: ko }); // "월요일"
+    const month = format(today, "M", { locale: ko }); // "10"
+    const day = format(today, "d", { locale: ko }); // "14"
+    const dayOfWeek = format(today, "EEEE", { locale: ko }); // "월요일"
     const expectedTitle = `${month}월 ${day}일 ${dayOfWeek} 메뉴`;
 
     console.log(`Looking for post with title: ${expectedTitle}`);
@@ -217,12 +221,12 @@ export async function crawlMenuImages(blogUrl: string): Promise<CrawlResult> {
         success: false,
         date: `${month}월 ${day}일`,
         dayOfWeek,
-        error: 'Today\'s menu post not found',
+        error: "Today's menu post not found",
       };
     }
 
     // Navigate to the post
-    await page.goto(postLink, { waitUntil: 'networkidle2' });
+    await page.goto(postLink, { waitUntil: "networkidle2" });
 
     // Extract images
     const images = await extractMenuImages(page);
@@ -243,18 +247,16 @@ export async function crawlMenuImages(blogUrl: string): Promise<CrawlResult> {
       lunchImageUrl: images[0],
       dinnerImageUrl: images[1],
     };
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Crawling error:', errorMessage);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Crawling error:", errorMessage);
 
     return {
       success: false,
-      date: format(new Date(), 'M월 d일', { locale: ko }),
-      dayOfWeek: format(new Date(), 'EEEE', { locale: ko }),
+      date: format(new Date(), "M월 d일", { locale: ko }),
+      dayOfWeek: format(new Date(), "EEEE", { locale: ko }),
       error: errorMessage,
     };
-
   } finally {
     if (browser) {
       await browser.close();
@@ -265,30 +267,29 @@ export async function crawlMenuImages(blogUrl: string): Promise<CrawlResult> {
 /**
  * Finds today's post link on the blog list
  */
-async function findTodaysPost(
-  page: Page,
-  month: string,
-  day: string,
-  dayOfWeek: string
-): Promise<string | null> {
+async function findTodaysPost(page: Page, month: string, day: string, dayOfWeek: string): Promise<string | null> {
   try {
     // Naver blog post titles are usually in <a> tags
-    const posts = await page.$$eval('.se-section-documentList a', (links, args) => {
-      const { month, day, dayOfWeek } = args;
+    const posts = await page.$$eval(
+      ".se-section-documentList a",
+      (links, args) => {
+        const { month, day, dayOfWeek } = args;
 
-      for (const link of links) {
-        const title = link.textContent || '';
-        // Match "10월 14일 월요일 메뉴" format
-        if (title.includes(`${month}월 ${day}일`) && title.includes(dayOfWeek)) {
-          return (link as HTMLAnchorElement).href;
+        for (const link of links) {
+          const title = link.textContent || "";
+          // Match "10월 14일 월요일 메뉴" format
+          if (title.includes(`${month}월 ${day}일`) && title.includes(dayOfWeek)) {
+            return (link as HTMLAnchorElement).href;
+          }
         }
-      }
-      return null;
-    }, { month, day, dayOfWeek });
+        return null;
+      },
+      { month, day, dayOfWeek },
+    );
 
     return posts;
   } catch (error) {
-    console.error('Error finding today\'s post:', error);
+    console.error("Error finding today's post:", error);
     return null;
   }
 }
@@ -299,20 +300,17 @@ async function findTodaysPost(
 async function extractMenuImages(page: Page): Promise<string[]> {
   try {
     // Wait for images to load
-    await page.waitForSelector('.se-image-resource', { timeout: 10000 });
+    await page.waitForSelector(".se-image-resource", { timeout: 10000 });
 
     // Extract image URLs
-    const imageUrls = await page.$$eval('.se-image-resource', (imgs) => {
-      return imgs
-        .map((img) => (img as HTMLImageElement).src)
-        .filter((src) => src && src.startsWith('http'));
+    const imageUrls = await page.$$eval(".se-image-resource", (imgs) => {
+      return imgs.map((img) => (img as HTMLImageElement).src).filter((src) => src && src.startsWith("http"));
     });
 
     console.log(`Found ${imageUrls.length} images in the post`);
     return imageUrls;
-
   } catch (error) {
-    console.error('Error extracting images:', error);
+    console.error("Error extracting images:", error);
     return [];
   }
 }
@@ -336,6 +334,7 @@ git commit -m "feat: implement blog crawler with Puppeteer"
 ## Task 4: Discord Module
 
 **Files:**
+
 - Create: `src/discord.ts`
 
 ### Step 1: Create Discord sender module
@@ -343,16 +342,13 @@ git commit -m "feat: implement blog crawler with Puppeteer"
 Create `src/discord.ts`:
 
 ```typescript
-import { WebhookClient, EmbedBuilder } from 'discord.js';
-import { CrawlResult } from './types';
+import { WebhookClient, EmbedBuilder } from "discord.js";
+import { CrawlResult } from "./types";
 
 /**
  * Sends menu images to Discord
  */
-export async function sendMenuToDiscord(
-  webhookUrl: string,
-  result: CrawlResult
-): Promise<void> {
+export async function sendMenuToDiscord(webhookUrl: string, result: CrawlResult): Promise<void> {
   const webhook = new WebhookClient({ url: webhookUrl });
 
   try {
@@ -364,13 +360,11 @@ export async function sendMenuToDiscord(
       await sendErrorMessage(webhook, result);
     }
 
-    console.log('Message sent to Discord successfully');
-
+    console.log("Message sent to Discord successfully");
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('Error sending to Discord:', errorMessage);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("Error sending to Discord:", errorMessage);
     throw error;
-
   } finally {
     webhook.destroy();
   }
@@ -379,28 +373,19 @@ export async function sendMenuToDiscord(
 /**
  * Sends success message with menu images
  */
-async function sendSuccessMessage(
-  webhook: WebhookClient,
-  result: CrawlResult
-): Promise<void> {
+async function sendSuccessMessage(webhook: WebhookClient, result: CrawlResult): Promise<void> {
   const embed = new EmbedBuilder()
     .setColor(0x00ff00) // Green
     .setTitle(`🍴 오늘의 세교푸드 메뉴 (${result.date} ${result.dayOfWeek})`)
-    .setDescription('오늘의 중식과 석식 메뉴입니다.')
+    .setDescription("오늘의 중식과 석식 메뉴입니다.")
     .setTimestamp()
-    .setFooter({ text: '세교푸드 메뉴 봇' });
+    .setFooter({ text: "세교푸드 메뉴 봇" });
 
   // Send lunch image
-  const lunchEmbed = new EmbedBuilder()
-    .setColor(0x0099ff)
-    .setTitle('🍱 중식')
-    .setImage(result.lunchImageUrl!);
+  const lunchEmbed = new EmbedBuilder().setColor(0x0099ff).setTitle("🍱 중식").setImage(result.lunchImageUrl!);
 
   // Send dinner image
-  const dinnerEmbed = new EmbedBuilder()
-    .setColor(0xff9900)
-    .setTitle('🍽️ 석식')
-    .setImage(result.dinnerImageUrl!);
+  const dinnerEmbed = new EmbedBuilder().setColor(0xff9900).setTitle("🍽️ 석식").setImage(result.dinnerImageUrl!);
 
   await webhook.send({
     embeds: [embed, lunchEmbed, dinnerEmbed],
@@ -410,20 +395,17 @@ async function sendSuccessMessage(
 /**
  * Sends error notification
  */
-async function sendErrorMessage(
-  webhook: WebhookClient,
-  result: CrawlResult
-): Promise<void> {
+async function sendErrorMessage(webhook: WebhookClient, result: CrawlResult): Promise<void> {
   const embed = new EmbedBuilder()
     .setColor(0xffaa00) // Yellow/Orange
-    .setTitle('⚠️ 메뉴를 찾을 수 없습니다')
+    .setTitle("⚠️ 메뉴를 찾을 수 없습니다")
     .setDescription(
       `오늘(${result.date} ${result.dayOfWeek}) 세교푸드 메뉴를 찾을 수 없습니다.\n\n` +
-      `**오류 메시지:** ${result.error}\n\n` +
-      `블로그를 직접 확인해주세요: https://blog.naver.com/sekyofood`
+        `**오류 메시지:** ${result.error}\n\n` +
+        `블로그를 직접 확인해주세요: https://blog.naver.com/sekyofood`,
     )
     .setTimestamp()
-    .setFooter({ text: '세교푸드 메뉴 봇' });
+    .setFooter({ text: "세교푸드 메뉴 봇" });
 
   await webhook.send({
     embeds: [embed],
@@ -449,6 +431,7 @@ git commit -m "feat: implement Discord webhook sender with embeds"
 ## Task 5: Main Entry Point
 
 **Files:**
+
 - Create: `src/main.ts`
 
 ### Step 1: Create main entry point
@@ -456,55 +439,54 @@ git commit -m "feat: implement Discord webhook sender with embeds"
 Create `src/main.ts`:
 
 ```typescript
-import dotenv from 'dotenv';
-import { crawlMenuImages } from './crawler';
-import { sendMenuToDiscord } from './discord';
+import dotenv from "dotenv";
+import { crawlMenuImages } from "./crawler";
+import { sendMenuToDiscord } from "./discord";
 
 // Load environment variables
 dotenv.config();
 
-const BLOG_URL = 'https://blog.naver.com/sekyofood';
+const BLOG_URL = "https://blog.naver.com/sekyofood";
 const WEBHOOK_URL = process.env.DISCORD_WEBHOOK_URL;
 
 async function main() {
-  console.log('=== Daily Menu Bot Started ===');
+  console.log("=== Daily Menu Bot Started ===");
   console.log(`Time: ${new Date().toISOString()}`);
 
   // Validate environment variables
   if (!WEBHOOK_URL) {
-    console.error('ERROR: DISCORD_WEBHOOK_URL is not set');
+    console.error("ERROR: DISCORD_WEBHOOK_URL is not set");
     process.exit(1);
   }
 
   try {
     // Step 1: Crawl the blog
-    console.log('Step 1: Crawling blog...');
+    console.log("Step 1: Crawling blog...");
     const result = await crawlMenuImages(BLOG_URL);
 
-    console.log('Crawl result:', JSON.stringify(result, null, 2));
+    console.log("Crawl result:", JSON.stringify(result, null, 2));
 
     // Step 2: Send to Discord
-    console.log('Step 2: Sending to Discord...');
+    console.log("Step 2: Sending to Discord...");
     await sendMenuToDiscord(WEBHOOK_URL, result);
 
-    console.log('=== Bot Completed Successfully ===');
+    console.log("=== Bot Completed Successfully ===");
     process.exit(0);
-
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-    console.error('=== Bot Failed ===');
-    console.error('Error:', errorMessage);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+    console.error("=== Bot Failed ===");
+    console.error("Error:", errorMessage);
 
     // Try to send error notification to Discord
     try {
       await sendMenuToDiscord(WEBHOOK_URL, {
         success: false,
-        date: new Date().toLocaleDateString('ko-KR'),
-        dayOfWeek: new Date().toLocaleDateString('ko-KR', { weekday: 'long' }),
+        date: new Date().toLocaleDateString("ko-KR"),
+        dayOfWeek: new Date().toLocaleDateString("ko-KR", { weekday: "long" }),
         error: errorMessage,
       });
     } catch (discordError) {
-      console.error('Failed to send error to Discord:', discordError);
+      console.error("Failed to send error to Discord:", discordError);
     }
 
     process.exit(1);
@@ -533,6 +515,7 @@ git commit -m "feat: implement main entry point with error handling"
 ## Task 6: GitHub Actions Workflow
 
 **Files:**
+
 - Create: `.github/workflows/daily-menu.yml`
 
 ### Step 1: Create workflow directory
@@ -550,7 +533,7 @@ on:
   schedule:
     # Runs at 00:00 UTC every weekday (Mon-Fri)
     # 00:00 UTC = 09:00 KST (UTC+9)
-    - cron: '0 0 * * 1-5'
+    - cron: "0 0 * * 1-5"
 
   # Allow manual trigger for testing
   workflow_dispatch:
@@ -566,8 +549,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -593,13 +576,14 @@ git commit -m "ci: add GitHub Actions workflow for daily scheduling"
 ## Task 7: Documentation
 
 **Files:**
+
 - Create: `README.md`
 
 ### Step 1: Create README
 
 Create `README.md`:
 
-```markdown
+````markdown
 # Today Launch - Daily Menu Bot
 
 매일 아침 9시에 세교푸드 구내식당 메뉴를 Discord로 전송하는 자동화 봇입니다.
@@ -626,6 +610,7 @@ Create `README.md`:
 git clone <repository-url>
 cd today-launch
 ```
+````
 
 ### 2. Install dependencies
 
@@ -665,6 +650,7 @@ npm run dev
 ### Manual Trigger
 
 You can manually trigger the workflow:
+
 1. Go to **Actions** tab
 2. Select **Daily Menu Bot** workflow
 3. Click **Run workflow**
@@ -685,20 +671,22 @@ Feel free to open issues or submit pull requests!
 ## 📄 License
 
 MIT
-```
+
+````
 
 ### Step 2: Commit
 
 ```bash
 git add README.md
 git commit -m "docs: add comprehensive README"
-```
+````
 
 ---
 
 ## Task 8: Final Testing & Verification
 
 **Files:**
+
 - Verify: All files created and committed
 
 ### Step 1: Verify project structure
@@ -706,6 +694,7 @@ git commit -m "docs: add comprehensive README"
 Run: `find . -type f -not -path './node_modules/*' -not -path './.git/*' -not -path './dist/*' | sort`
 
 Expected output should include:
+
 ```
 ./.env.example
 ./.github/workflows/daily-menu.yml

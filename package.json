@@ -10,14 +10,20 @@
     "lint": "eslint src --ext .ts",
     "test": "echo \"No tests yet\" && exit 0"
   },
-  "keywords": ["discord", "bot", "cafeteria", "menu"],
+  "keywords": [
+    "discord",
+    "bot",
+    "cafeteria",
+    "menu"
+  ],
   "author": "",
   "license": "MIT",
   "dependencies": {
     "discord.js": "^14.22.1",
     "puppeteer": "^24.11.1",
     "date-fns": "^4.1.0",
-    "dotenv": "^16.4.7"
+    "dotenv": "^16.4.7",
+    "prettier": "^3.6.2"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
