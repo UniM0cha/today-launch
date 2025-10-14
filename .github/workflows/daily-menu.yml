@@ -4,6 +4,8 @@ on:
   schedule:
     # Runs at 00:00 UTC every weekday (Mon-Fri)
     # 00:00 UTC = 09:00 KST (UTC+9)
+    # NOTE: Scheduled workflows only run from the default branch (main/master)
+    # The workflow must be merged to the default branch for scheduled runs to work
     - cron: "0 0 * * 1-5"
 
   # Allow manual trigger for testing
