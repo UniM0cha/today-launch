@@ -2,10 +2,11 @@ name: Daily Menu Bot
 
 on:
   schedule:
-    # Runs at 00:00 UTC every weekday (Mon-Fri)
-    # 00:00 UTC = 09:00 KST (UTC+9)
+    # Runs at 00:00 UTC every weekday (Mon-Fri) = 09:00 KST
+    # Korea Standard Time (KST) is always UTC+9 (no daylight saving)
+    # 00:00 UTC = 09:00 KST (09시 정각)
     # NOTE: Scheduled workflows only run from the default branch (main/master)
-    # The workflow must be merged to the default branch for scheduled runs to work
+    # NOTE: GitHub Actions scheduled runs may be delayed by several minutes
     - cron: "0 0 * * 1-5"
 
   # Allow manual trigger for testing
