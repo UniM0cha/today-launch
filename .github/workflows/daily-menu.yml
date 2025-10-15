@@ -2,9 +2,8 @@ name: Daily Menu Bot
 
 on:
   schedule:
-    # Runs at 00:00 UTC every weekday (Mon-Fri)
-    # 00:00 UTC = 09:00 KST (UTC+9)
-    - cron: "0 0 * * 1-5"
+    # 한국시간 평일 오전 9시에 작동하게 하고 싶은데 이상하게 한시간 뒤에 작동해서 한시간 땡김
+    - cron: "0 23 * * 0-4"
 
   # Allow manual trigger for testing
   workflow_dispatch:
