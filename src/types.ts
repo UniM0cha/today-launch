@@ -14,6 +14,7 @@ export interface CrawlResult {
  */
 export interface BotConfig {
   webhookUrl: string;
+  slackWebhookUrl?: string; // Optional: Slack incoming webhook. When unset, only Discord is used.
   blogUrl: string;
   headless: boolean;
 }
